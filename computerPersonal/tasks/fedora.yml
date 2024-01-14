@@ -1,0 +1,59 @@
+# tasks file for rp10614
+---
+- name: Atualizando cache
+  dnf:
+    update_cache: yes
+
+- name: Atualizando Pacotes
+  dnf:
+    name: "*"
+    state: latest
+
+- name: Chave de Repositório Visual Code
+  rpm_key:
+    key: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Chave de Repositório Google chrome
+  rpm_key:
+    key: https://dl.google.com/linux/linux_signing_key.pub
+    state: present
+
+- name: Chave de Repositório Brave Browser
+  rpm_key: 
+    key: https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+    state: present
+
+- name: Chave de Repositorio RPM fusion
+  rpm_key:    
+    key: https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-2020
+    state: present
+
+- name: Repositorio VSCode
+  yum_repository:
+    name: vscode
+    description: VSCode YUM repo
+    baseurl: "https://packages.microsoft.com/yumrepos/vscode"
+
+- name: Repositorio Brave Browser
+  yum_repository:
+    name: brave-browser
+    description: Brave Browser
+    baseurl: "https://brave-browser-rpm-release.s3.brave.com/x86_64/"    
+
+- name: Atualizando cache
+  dnf:
+    update_cache: yes
+
+- name: Fazendo Download e Instalando navegador Chrome
+  dnf: 
+    name: 'https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm'
+    state: present
+
+- name: Fazendo Download e Instalando Repositorio RPM fusion
+  dnf:
+    name: '{{ item }}'
+    state: present
+  loop:  
+  - https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm
+  

@@ -1,0 +1,93 @@
+# tasks file for rp10614
+---
+- name: Atualizando cache
+  apt:
+    update_cache: yes
+
+- name: Atualizando Pacotes
+  apt:
+    name: "*"
+    state: latest
+
+- name: Instalando Pre-requisitos
+  apt:
+    pkg: '{{ item }}'
+  loop:
+  - vim
+  - git
+  - curl
+  - zsh
+  - apt-transport-https
+  - software-properties-common
+
+- name: Chave de Repositório Visual Code
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Chave de Repositório Brave Browser
+  apt_key: 
+    url: https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+    state: present
+
+- name: Repositorio VSCode
+  apt_repository:
+    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+    state: present
+    filename: vscode
+
+- name: Repositorio Brave Browser
+  apt_repository:
+    repo: "deb [arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main"
+    state: present
+    filename: brave
+
+- name: Atualizando cache
+  apt:
+    update_cache: yes
+
+- name: Download Condifurações ZSH
+  get_url:
+    url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: /home/wagneroliveira/install.sh
+    mode: +x
+
+- name: Configurando ZSH
+  command: sudo -u wagneroliveira bash -c '/home/wagneroliveira/install.sh --dont-wait'
+  ignore_errors: true
+
+- name: Limpando Configuracoes ZSH
+  file:
+    path: /home/wagneroliveira/install.sh
+    state: absent
+
+- name: Configurando Plugin ZSH
+  lineinfile:
+    path: /home/wagneroliveira/.zshrc
+    line: '{{ item.line }}'
+    regex: '{{ item.regex }}'
+  loop:
+  - line: ZSH_THEME="candy"
+    regex: '^ZSH_THEME='
+
+- name: Fazendo Download e Instalando navegador Chrome
+  apt: 
+    deb:  https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    
+- name: Instalando Softwares Operacionais
+  apt:
+    pkg: '{{ item }}'
+  loop:
+  - code
+  - guake
+  - guake-indicator
+  - remmina
+  - remmina-plugin-rdp
+  - brave-browser
+  - vagrant
+  - virtualbox
+  - virtualbox-ext-pack
+  - tmux
+  - tmuxinator
+  - flameshot
+  - locate
