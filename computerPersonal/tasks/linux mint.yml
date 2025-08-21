@@ -1,0 +1,196 @@
+# tasks file for Computador Pessoal
+---
+- name: Atualizando cache
+  apt:
+    update_cache: yes
+
+- name: Atualizando Pacotes
+  apt:
+    name: "*"
+    state: latest
+
+- name: Instalando Pre-requisitos
+  apt:
+    pkg: '{{ item }}'
+  loop:
+  - vim
+  - git
+  - curl
+  - zsh
+  - apt-transport-https
+  - software-properties-common
+  - make 
+  - build-essential
+  - libssl-dev
+  - zlib1g-dev
+  - libbz2-dev
+  - libreadline-dev
+  - libsqlite3-dev
+  - wget
+  - curl
+  - llvm
+  - libncursesw5-dev
+  - xz-utils
+  - tk-dev
+  - libxml2-dev
+  - libxmlsec1-dev
+  - libffi-dev
+  - liblzma-dev
+
+- name: Chave de Repositório Visual Code
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Chave de Repositório Brave Browser
+  apt_key: 
+    url: https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+    state: present
+
+- name: Repositorio VSCode
+  apt_repository:
+    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+    state: present
+    filename: vscode
+
+- name: Repositorio Brave Browser
+  apt_repository:
+    repo: "deb [arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main"
+    state: present
+    filename: brave
+
+- name: Chave de Repositorio Vagrant
+  apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present    
+
+- name: Repositorio Vagrant
+  apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com noble main"
+    state: present
+    filename: hashicorp
+
+- name: Atualizando cache
+  apt:
+    update_cache: yes
+
+- name: Download Configurações ZSH
+  get_url:
+    url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: /home/woliveira/install.sh
+    mode: +x
+
+- name: Configurando ZSH
+  command: sudo -u woliveira bash -c '/home/woliveira/install.sh --dont-wait'
+  ignore_errors: true  
+
+- name: Configurando Plugin ZSH
+  lineinfile:
+    path: /home/woliveira/.zshrc
+    line: '{{ item.line }}'
+    regex: '{{ item.regex }}'
+  loop:
+  - line: ZSH_THEME="candy"
+    regex: '^ZSH_THEME='
+
+- name: Download Configurações Pyenv
+  get_url:
+    url: https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer
+    dest: /home/woliveira/pyenv-installer
+    mode: +x
+
+- name: Configurando Pyenv
+  command: sudo -u woliveira bash -c '/home/woliveira/pyenv-installer --dont-wait'
+  ignore_errors: true
+
+- name: Insert/Update .zshrc
+  blockinfile:
+    path: /home/woliveira/.zshrc
+    marker: "# ANSIBLE MANAGED BLOCK"
+    block: |
+      export PYENV_ROOT="$HOME/.pyenv"
+      [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init - bash)"
+      eval "$(pyenv virtualenv-init -)"
+
+- name: Insert/Update .bashrc
+  blockinfile:
+    path: /home/woliveira/.bashrc
+    marker: "# ANSIBLE MANAGED BLOCK"
+    block: |
+      export PYENV_ROOT="$HOME/.pyenv"
+      [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init - bash)"
+      eval "$(pyenv virtualenv-init -)"
+
+- name: Limpando Configuracoes ZSH, Pyenv
+  file:
+    path: '{{ item}}'
+    state: absent
+  loop:
+  - /home/woliveira/install.sh
+  - /home/woliveira/pyenv-installer
+
+- name: Fazendo Download e Instalando navegador Chrome
+  apt: 
+    deb:  https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    
+- name: Instalando Softwares Operacionais
+  apt:
+    pkg: '{{ item }}'
+  loop:
+  - code
+  - guake
+  - guake-indicator
+  - remmina
+  - remmina-plugin-rdp
+  - brave-browser  
+  - tmux
+  - tmuxinator
+  - flameshot
+  - locate
+  - vim  
+  - git
+  - curl
+  - zsh
+  - code
+  - guake
+  - remmina
+  - remmina-plugin-rdp
+  - brave-browser
+  - vagrant
+  - tmux
+  - flameshot
+  - locate
+  - python3-firewall
+  - vlc
+  - python3-vlc    
+  - openssh-server
+  - network-manager  
+
+- name: Instalando pacotes Virtualização KVM
+  package:
+    name: '{{ item }}'
+    state: present
+  loop:
+  - qemu-kvm
+  - libvirt-daemon-system 
+  - libvirt-clients 
+  - bridge-utils   
+  - virt-manager
+  - libvirt-dev
+  - virt-top 
+  - libguestfs-tools 
+  - guestfs-tools
+  - cockpit
+  - cockpit-machines
+  - cockpit-networkmanager  
+
+- name: Habilitando serviços na inicialização
+  systemd:
+    name: '{{ item }}'
+    state: started
+    enabled: yes
+  loop:
+  - libvirtd
+  - cockpit
